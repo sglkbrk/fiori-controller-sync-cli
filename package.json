@@ -1,33 +1,25 @@
 {
-  "name": "fiori-controller-sync-cli",
-  "version": "1.0.0",
-  "description": "CLI to replace SAP UI5 controller files with their -dbg versions and clean up artifacts",
-  "bin": {
-    "fiori-controller-sync": "./bin/cli.js"
-  },
-  "main": "src/index.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node ./bin/cli.js"
-  },
-  "engines": {
-    "node": ">=16"
-  },
-  "keywords": [
-    "sap",
-    "ui5",
-    "fiori",
-    "cli",
-    "controller"
+  "name": "fiori-ui5-clean",
+  "version": "1.0.4",
+  "private": true,
+  "description": "Monorepo for fiori-controller-sync CLI and core utilities",
+  "workspaces": [
+    "packages/*"
   ],
+  "scripts": {
+    "bootstrap": "npm install --workspaces",
+    "build": "npm -ws run build --if-present",
+    "lint": "npm -ws run lint --if-present",
+    "test": "npm -ws run test --if-present"
+  },
   "author": "Burak Saglik",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bsaglik/fiori-controller-sync-cli.git"
+    "url": "git+https://github.com/sglkbrk/fiori-controller-sync-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/bsaglik/fiori-controller-sync-cli/issues"
+    "url": "https://github.com/sglkbrk/fiori-controller-sync-cli/issues"
   }
 }
 

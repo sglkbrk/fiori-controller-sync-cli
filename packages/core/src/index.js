@@ -1,9 +1,6 @@
 /**
- * Core logic for syncing SAP UI5 controller files with their debug counterparts.
- * - Finds *-dbg.controller.js files
- * - Replaces the paired *.controller.js content
- * - Optionally creates backups
- * - Removes debug and map files
+ * Core logic for syncing SAP UI5 controller files with their debug counterparts
+ * and cleaning Component-preload artifacts.
  */
 
 const fs = require('fs');
@@ -23,7 +20,7 @@ async function pathExists(targetPath) {
   }
 }
 
-async function* walk(dir) {
+async function* walkControllers(dir) {
   const entries = await fsp.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.isDirectory()) {
@@ -31,19 +28,47 @@ async function* walk(dir) {
         continue;
       }
       const subDir = path.join(dir, entry.name);
-      yield* walk(subDir);
+      yield* walkControllers(subDir);
       continue;
     }
-    if (entry.isFile() && entry.name.endsWith('-dbg.controller.js')) {
+    if (entry.isFile() && entry.name.endsWith('-dbg.js')) {
       yield path.join(dir, entry.name);
     }
   }
 }
 
+async function* walkPreload(dir) {
+  const entries = await fsp.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      if (SKIP_DIRS.has(entry.name)) {
+        continue;
+      }
+      const subDir = path.join(dir, entry.name);
+      yield* walkPreload(subDir);
+      continue;
+    }
+    if (entry.isFile() && entry.name.toLowerCase() === 'component-preload.js') {
+      yield path.join(dir, entry.name);
+    }
+  }
+}
+
+async function findCaseInsensitiveFile(dir, targetLower) {
+  const entries = await fsp.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isFile()) {
+      continue;
+    }
+    if (entry.name.toLowerCase() === targetLower) {
+      return path.join(dir, entry.name);
+    }
+  }
+  return null;
+}
+
 function buildTargetPaths(dbgPath) {
-  const parsed = path.parse(dbgPath);
-  const baseName = parsed.name.replace(/-dbg$/, '');
-  const controllerPath = path.join(parsed.dir, `${baseName}.controller.js`);
+  const controllerPath = dbgPath.replace(/-dbg\.js$/, '.js');
   const mapPath = `${controllerPath}.map`;
   return { controllerPath, mapPath };
 }
@@ -102,16 +127,49 @@ async function replaceController(dbgPath, options) {
   }
 }
 
+async function cleanComponentPreload(preloadPath, options) {
+  const dir = path.dirname(preloadPath);
+
+  if (options.dryRun) {
+    console.log(`[DRY-RUN] Would recreate empty: ${preloadPath}`);
+  } else {
+    await fsp.unlink(preloadPath).catch(() => {});
+    await fsp.writeFile(preloadPath, '', 'utf8');
+    console.log(`Recreated empty preload: ${preloadPath}`);
+  }
+
+  const mapPath =
+    (await findCaseInsensitiveFile(dir, 'component-preload.js.map')) ||
+    `${preloadPath}.map`;
+
+  if (await pathExists(mapPath)) {
+    if (options.dryRun) {
+      console.log(`[DRY-RUN] Would delete map: ${mapPath}`);
+    } else {
+      await fsp.unlink(mapPath);
+      console.log(`Deleted preload map: ${mapPath}`);
+    }
+  }
+}
+
 async function run(options) {
   const rootDir = path.resolve(options.rootDir);
   console.log(`Scanning: ${rootDir}`);
   console.log(`Options: dryRun=${options.dryRun} backup=${options.backup}`);
 
-  for await (const dbgPath of walk(rootDir)) {
+  for await (const dbgPath of walkControllers(rootDir)) {
     try {
       await replaceController(dbgPath, options);
     } catch (error) {
       console.error(`Failed processing ${dbgPath}: ${error.message}`);
+    }
+  }
+
+  for await (const preloadPath of walkPreload(rootDir)) {
+    try {
+      await cleanComponentPreload(preloadPath, options);
+    } catch (error) {
+      console.error(`Failed processing ${preloadPath}: ${error.message}`);
     }
   }
 
