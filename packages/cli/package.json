@@ -1,6 +1,6 @@
 {
   "name": "fiori-controller-sync-cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CLI to replace SAP UI5 controller files with their -dbg versions and clean up artifacts",
   "bin": {
     "fiori-controller-sync": "./bin/cli.js"
