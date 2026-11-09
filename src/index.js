@@ -31,7 +31,10 @@ async function* walkControllers(dir) {
       yield* walkControllers(subDir);
       continue;
     }
-    if (entry.isFile() && entry.name.endsWith('-dbg.js')) {
+    if (
+      entry.isFile() &&
+      (entry.name.endsWith('-dbg.controller.js') || entry.name.endsWith('-dbg.js'))
+    ) {
       yield path.join(dir, entry.name);
     }
   }
@@ -68,9 +71,16 @@ async function findCaseInsensitiveFile(dir, targetLower) {
 }
 
 function buildTargetPaths(dbgPath) {
-  const controllerPath = dbgPath.replace(/-dbg\.js$/, '.js');
-  const mapPath = `${controllerPath}.map`;
-  return { controllerPath, mapPath };
+  if (dbgPath.endsWith('-dbg.controller.js')) {
+    const controllerPath = dbgPath.replace(/-dbg\.controller\.js$/, '.controller.js');
+    return { controllerPath, mapPath: `${controllerPath}.map` };
+  }
+  if (dbgPath.endsWith('-dbg.js')) {
+    const controllerPath = dbgPath.replace(/-dbg\.js$/, '.js');
+    return { controllerPath, mapPath: `${controllerPath}.map` };
+  }
+  const controllerPath = dbgPath;
+  return { controllerPath, mapPath: `${controllerPath}.map` };
 }
 
 async function backupFile(targetPath, dryRun) {

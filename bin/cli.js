@@ -7,7 +7,7 @@
 
 const path = require('path');
 const readline = require('readline');
-const { run } = require('fiori-controller-sync-core');
+const { run } = require('../src/index');
 
 const HELP_TEXT = `
 Usage: fiori-controller-sync [options] [path]

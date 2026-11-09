@@ -1,11 +1,6 @@
 # Fiori Controller Sync
 
-SAP UI5 / Fiori projelerinde `*-dbg.js` dosyalarını üretim sürümüyle hizalar, `Component-preload.js` artefaktlarını temizler ve `.map` dosyalarını kaldırır. Bu repo, CLI ve core kodunu içerir.
-
-## Paketler
-
-- `packages/core` : Ortak senkronizasyon mantığı (dbg/preload temizlik)
-- `packages/cli` : NPM CLI (`fiori-controller-sync-cli`)
+SAP UI5 / Fiori projelerinde `*-dbg.js` dosyalarını üretim sürümüyle hizalar, `Component-preload.js` artefaktlarını temizler ve `.map` dosyalarını kaldırır. Tek paketli CLI dağıtımıdır.
 
 ## Özellikler
 
@@ -15,9 +10,9 @@ SAP UI5 / Fiori projelerinde `*-dbg.js` dosyalarını üretim sürümüyle hizal
 - İsteğe bağlı `.bak` yedeği (`--backup`)
 - Windows/macOS/Linux, CommonJS
 
-## CLI (NPM) Kurulum ve Kullanım
+## Kurulum ve Kullanım (NPM CLI)
 
-- Global: `npm install -g fiori-controller-sync-cli`
+- Global: `npm install -g fiori-controller-sync-cli` (ya da `fiori-controller-sync`)
 - Geçici (npx): `npx fiori-controller-sync-cli --dry-run ./my-fiori-app`
 
 ```
@@ -41,3 +36,8 @@ fiori-controller-sync-cli [options] [path]
 - Dry-run: `fiori-controller-sync-cli --dry-run ./my-fiori-app`
 - Yedekli: `fiori-controller-sync-cli --backup ./my-fiori-app`
 - Belirli dizin: `fiori-controller-sync-cli "C:\\Projects\\FioriApp"`
+
+## Lokal Geliştirme
+
+- Kurulum: `npm install`
+- CLI yerelden: `node ./bin/cli.js --dry-run ./my-fiori-app`
